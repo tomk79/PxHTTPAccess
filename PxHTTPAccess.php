@@ -2,18 +2,16 @@
 
 ###################################################################################################################
 #
-#	PxHTTPAccess 1.0.0
+#	PxHTTPAccess 1.0.1
 #			(HTTPアクセスオブジェクト)
 #			Copyright (C)Tomoya Koyanagi, All rights reserved.
-#			LastUpdate : 3:41 2008/06/20
+#			LastUpdate : 0:06 2009/09/20
 #	--------------------------------------
 #	このライブラリは、ネットワークを経由したHTTP通信でコンテンツを取得するクラスです。
 #	OpenSSLがインストールされている環境では、HTTPSも利用可能です。
 #	他のクラスに依存することなく単体で動作することができます。
 #	オリジナルのクラス名は PxHTTPAccess となっていますが、
 #	環境に合わせて任意に変更しても動作します。
-#	このバージョンは、PicklesCrawler 0.1.10 (http://pickles.pxt.jp/plugins/picklescrawler/)に組み込まれているものを
-#	単体で取り出したものです。
 class PxHTTPAccess{
 
 	var $http_connection_resource = null;//コネクションリソース
@@ -417,6 +415,8 @@ class PxHTTPAccess{
 							#	リダイレクト回数に達していたら、再帰的アクセスをしない。
 							continue;
 						}
+						$this->http_disconnect();//自分の接続を解除する。0:01 2009/09/20
+
 						$thisClassName = get_class( $this );
 						$http4redirect = new $thisClassName();
 						$http4redirect->set_max_redirect_number( $this->max_redirect_number );
@@ -427,11 +427,12 @@ class PxHTTPAccess{
 						if( is_file( $save_to_path ) ){
 							$http4redirect->save_http_contents( $save_to_path );
 						}else{
-							$http4redirect->get_http_contents();
+							$this->http_response_content = $http4redirect->get_http_contents();
 						}
+						$this->clear_response_header();//初期化 23:58 2009/09/19
 						$this->put_response_header( $http4redirect->get_response_header() );
 						unset( $http4redirect );
-						return	true;
+						return	$this->http_response_content;
 					}
 				}
 
@@ -517,8 +518,6 @@ class PxHTTPAccess{
 		$this->http_response_header .= $value;
 		return	true;
 	}
-
-
 
 
 
@@ -621,12 +620,6 @@ class PxHTTPAccess{
 	}
 
 
-
-
-
-
-
-
 	#--------------------------------------
 	#	ファイルに追記する
 	function savefile_push( $filepath , $CONTENT , $perm = null ){
@@ -643,12 +636,10 @@ class PxHTTPAccess{
 		chmod( $filepath , $perm );
 		clearstatcache();
 
-		return	filesize( $filepath );
+		return filesize( $filepath );
 
 	}
 
 }
-
-
 
 ?>
