@@ -2,10 +2,10 @@
 
 ###################################################################################################################
 #
-#	PxHTTPAccess 1.0.2
+#	PxHTTPAccess 1.0.3
 #			(HTTPアクセスオブジェクト)
 #			Copyright (C)Tomoya Koyanagi, All rights reserved.
-#			LastUpdate : 0:41 2011/03/27
+#			LastUpdate : 12:07 2011/05/22
 #	--------------------------------------
 #	このライブラリは、ネットワークを経由したHTTP通信でコンテンツを取得するクラスです。
 #	OpenSSLがインストールされている環境では、HTTPSも利用可能です。
@@ -57,6 +57,7 @@ class PxHTTPAccess{
 	var $http_response_last_modified = null;//HTTP1.1 Last-Modified の値 (PxHTTPAccess 1.0.2 追加)
 	var $http_response_connection = null;//Connection の値
 	var $http_response_www_authenticate = array();//WWW-Authenticate の値 PxHTTPAccess 1.0.2 追加
+	var $http_response_all = array();//その他のヘッダー情報を仕舞っておく器 PxHTTPAccess 1.0.3 追加
 	#	/ 応答ヘッダ：アクセス結果のメモ
 	#--------------------------------------
 
@@ -185,6 +186,7 @@ class PxHTTPAccess{
 		if( !strlen( $this->http_response_last_modified ) ){ return null; }
 		return strtotime( $this->http_response_last_modified );
 	}
+	function get_response( $key )			{ return $this->http_response_all[strtolower($key)]; }//PxHTTPAccess 1.0.3 追加
 	function get_socket_open_error_num()	{ return $this->socket_open_error_num; }
 	function get_socket_open_error_msg()	{ return $this->socket_open_error_msg; }
 	function get_socket_open_error(){
@@ -591,11 +593,16 @@ class PxHTTPAccess{
 		$this->http_response_content_length = null;
 		$this->http_response_redirect_to = null;
 		$this->http_response_connection = null;
+		$this->http_response_all = array();
 		return	true;
 	}
 	#	応答ヘッダに追記する
 	function put_response_header( $value ){
 		$this->http_response_header .= $value;
+		if( preg_match( '/(.*?):\s*(.*?)(?:\r\n|\r|\n)?$/si' , $value , $matched ) ){
+			#	ヘッダーを記憶
+			$this->http_response_all[strtolower($matched[1])] = trim( $matched[2] );
+		}
 		return	true;
 	}
 
