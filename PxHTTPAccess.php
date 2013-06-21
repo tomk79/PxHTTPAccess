@@ -2,10 +2,10 @@
 
 ###################################################################################################################
 #
-#	PxHTTPAccess 1.0.3
+#	PxHTTPAccess 1.0.4
 #			(HTTPアクセスオブジェクト)
 #			Copyright (C)Tomoya Koyanagi, All rights reserved.
-#			LastUpdate : 12:07 2011/05/22
+#			LastUpdate : 11:50 2013/06/21
 #	--------------------------------------
 #	このライブラリは、ネットワークを経由したHTTP通信でコンテンツを取得するクラスです。
 #	OpenSSLがインストールされている環境では、HTTPSも利用可能です。
@@ -396,7 +396,7 @@ class PxHTTPAccess{
 				$line = fread( $res , $this->fread_length );
 			}else{
 				#	テキストのデータはこっちが速い？
-				$line = fgets( $res );
+				$line = fgets( $res , $this->fread_length );
 			}
 
 			if( $status == 1 || $status == 2 ){
